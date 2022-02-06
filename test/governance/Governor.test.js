@@ -15,7 +15,7 @@ const {
 
 const Token = artifacts.require('EVIToken');
 const Governor = artifacts.require('EVIGov');
-const CallReceiver = artifacts.require('CallReceiverMock');
+const CallReceiver = artifacts.require('Executor');
 
 contract('Governor', function (accounts) {
   const [ owner, proposer, voter1, voter2, voter3, voter4 ] = accounts;
