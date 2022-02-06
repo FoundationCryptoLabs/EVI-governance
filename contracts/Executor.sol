@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 contract CDPTrackerLike{
-  function setInterest(uint256 StabilityFee) {}
+  function setInterest(uint256 StabilityFee) external {}
 }
 
 contract CoinLike{
@@ -47,14 +47,17 @@ contract Executor {
   event RemoveAuthorization(address account);
 
   mapping (address => uint256) public authorizedAccounts;
-  /**
-   * @notice Add auth to an account
-   * @param account Account to add auth to
-   */
-  address CDPaddress = 0x7a0984E49418759Ef975F7d1d93f5606A8055b38; //hardcoded value.
-  address Coinaddr =
-  CDP = CDPlike(CDPaddress);
-  Coin = CoinLike(Coinaddr);
+
+   address CDPaddress; //hardcoded value.
+   address Coinaddr;
+   function setCoin(address STABLE) external isAuthorized {
+     Coinaddr = STABLE;
+   }
+   function setCDP(address CDPaddr) external isAuthorized {
+     CDPaddress = CDPaddr;
+   }
+
+
 
   function addAuthorization(address account) external isAuthorized {
       authorizedAccounts[account] = 1;
@@ -78,19 +81,21 @@ contract Executor {
 
   // Spend money from treasury
   function TransferFunds(address dest, uint256 amount) external isAuthorized payable returns (bool) {
-      require(Coin.balanceOf(address.this)>=amount, "Insufficient Treasury Reserves")
+      CoinLike Coin = CoinLike(Coinaddr);
+      require(Coin.balanceOf(address(this))>=amount, "Insufficient Treasury Reserves");
       Coin.transfer(dest, amount);
       return true;
   }
 
 // Set new xBTC Interest rate
   function setInterest(uint256 newInterest) external isAuthorized returns (bool){
+    CDPTrackerLike CDP = CDPTrackerLike(CDPaddress);
     CDP.setInterest(newInterest);
     return true;
   }
 
   // Mock Functions below for testing
-  
+
     string public sharedAnswer;
 
     event MockFunctionCalled();
